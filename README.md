@@ -28,8 +28,8 @@ strigo-cli supports most of the functions currently exposed by the Strigo API, i
 $ strigo-cli create-event --name "My Training Event" \
   --owner "john@johnbyrne.io" \
   --classid "xxxxxxxxxx" \
-  --start 2019-01-28T09:00:00.000Z \ 
-  --end 2019-01-28T17:00:00.000Z  \
+  --start 2019-01-28T09:00+01:00 \ 
+  --end 2019-01-28T17:00+01:00  \
   --chat \
   --video \
   --ta "john.doe@example.com" \
@@ -42,8 +42,8 @@ $ strigo-cli create-event --name "My Training Event" \
 | --name        | -n    | Name of the event                                                                |
 | --owner       | -o    | Email address of event owner                                                     |
 | --classid     | -c    | Class ID (Use list-classes to get a list of IDs)                                 |
-| --start       | -s    | Start Time (ex: 2019-01-28T09:00:00.000Z)                                        |
-| --end         | -e    | End Time (ex: 2019-01-28T17:00:00.000Z)                                          |
+| --start       | -s    | Start time using datetime format (ex: 2019-01-28T09:00-05:00)                    |
+| --end         | -e    | End time using datetime format (ex: 2019-01-28T17:00-05:00)                      |
 | --chat        |       | Enable chat                                                                      |
 | --video       |       | Enable video                                                                     |
 | --ta          | -t    | Email address of teaching assistant. Can be used multiple times.                 |

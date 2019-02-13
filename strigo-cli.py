@@ -54,7 +54,7 @@ def create_event(args, auth_header):
     check_request_error(r)
     response = r.json()
 
-    print("Classroom URL: %s" % response['data']['event_link'])
+    print("%s: %s" % (response['data']['name'], response['data']['event_link']))
 
     if response['data']['availability'] == 'public':
         print("Token: %s" % response['data']['token'])
@@ -181,8 +181,8 @@ def main():
     parser_create_event.add_argument('-o', '--owner', required=True, help="event owner's email address")
     parser_create_event.add_argument('-c', '--classid', required=True, help="ID of class to use")
     parser_create_event.add_argument('-d', '--description', required=False, help="optional event description")
-    parser_create_event.add_argument('-s', '--start', required=True, help="start date/time (ex: 2019-01-28T09:00:00.000Z)")
-    parser_create_event.add_argument('-e', '--end', required=True, help="end date/time (ex: 2019-01-28T17:00:00.000Z)")
+    parser_create_event.add_argument('-s', '--start', required=True, help="start date/time (ex: 2019-01-28T09:00-05:00")
+    parser_create_event.add_argument('-e', '--end', required=True, help="end date/time (ex: 2019-01-28T17:00-05:00)")
     parser_create_event.add_argument('--chat', action="store_true", help="enable chat")
     parser_create_event.add_argument('--video', action="store_true", help="enable video")
     parser_create_event.add_argument('--newconsole', action="store_true", help="use new console (beta)")
