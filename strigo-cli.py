@@ -59,6 +59,18 @@ def create_event(args, auth_header):
     if response['data']['availability'] == 'public':
         print("Token: %s" % response['data']['token'])
 
+def modify_event(args, auth_header):
+    api_endpoint = API_BASE_URL + 'events' + '/' + args.event_id
+
+    event_config = {}
+
+    if args.studentfile:
+        with open(args.studentfile) as f:
+            event_config['trainees'] = f.read().splitlines()
+
+    r = requests.patch(api_endpoint, headers=auth_header, json=event_config)
+    check_request_error(r)
+
 def list_events(args, auth_header):
     api_endpoint = API_BASE_URL + 'events'
     r = requests.get(api_endpoint, headers=auth_header)
@@ -189,6 +201,11 @@ def main():
     parser_create_event.add_argument('-t', '--ta', action="append", help="Teaching assistant email. Can use multiple times")
     parser_create_event.add_argument('-f', '--studentfile', help="file containing student emails (one per line)")
     parser_create_event.set_defaults(func=create_event)
+
+    parser_modify_event = subparsers.add_parser('modify-event')
+    parser_modify_event.add_argument('event_id', help="event ID")
+    parser_modify_event.add_argument('-f', '--studentfile', help="file containing student emails (one per line)")
+    parser_modify_event.set_defaults(func=modify_event)
 
     parser_list_events = subparsers.add_parser('list-events')
     parser_list_events.add_argument('-a', '--all', action="store_true", help="show all events, including completed")
