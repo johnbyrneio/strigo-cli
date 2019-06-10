@@ -143,6 +143,32 @@ def delete_event(args, auth_header):
     r = requests.delete(api_endpoint, headers=auth_header)
     check_request_error(r)
 
+def enroll(args, auth_header):
+    api_endpoint = API_BASE_URL + 'ondemand' + '/' + args.classid + '/' +'enrollments'
+
+    if not (args.email or args.studentfile):
+        print("Error: must provicde --email and/or --studentfile")
+        sys.exit(1)
+
+    enroll_list = []
+
+    if args.email:
+        enroll_list.extend(args.email)
+
+    if args.studentfile:
+        with open(args.studentfile) as f:
+            enroll_list += f.read().splitlines()
+
+    for email in enroll_list:
+
+        email_json = {"email": email}
+
+        r = requests.post(api_endpoint, headers=auth_header, json=email_json)
+        check_request_error(r)
+        response = r.json()
+
+        print("%s: %s" % (response['data']['email'], response['data']['status']))
+
 def list_classes(args, auth_header):
     api_endpoint = API_BASE_URL + 'classes'
     r = requests.get(api_endpoint, headers=auth_header)
@@ -218,6 +244,12 @@ def main():
     parser_delete_event = subparsers.add_parser('delete-event')
     parser_delete_event.add_argument('event_id', help="event ID")
     parser_delete_event.set_defaults(func=delete_event)
+
+    parser_enroll = subparsers.add_parser('enroll')
+    parser_enroll.add_argument('-c', '--classid', required=True, help="ID of class to use")
+    parser_enroll.add_argument('-e', '--email', action="append", help="Student email address. Can use multiple times")
+    parser_enroll.add_argument('-f', '--studentfile', help="file containing student emails (one per line)")
+    parser_enroll.set_defaults(func=enroll)
 
     parser_list_classes = subparsers.add_parser('list-classes')
     parser_list_classes.set_defaults(func=list_classes)
