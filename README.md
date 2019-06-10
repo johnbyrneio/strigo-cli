@@ -49,10 +49,39 @@ $ strigo-cli create-event --name "My Training Event" \
 | --ta          | -t    | Email address of teaching assistant. Can be used multiple times.                 |
 | --studentfile | -f    | Path to file containing a list of student email addresses. One address per line. |
 
+### modify-event
+
+Currently supports adding additional students to an existing event
+
+```
+$ strigo-cli modify-event <event_id> -f student_list.txt
+```
+
+| option        | short | description                                                                      |
+|---------------|-------|----------------------------------------------------------------------------------|
+| --studentfile | -f    | Path to file containing a list of student email addresses. One address per line. |
+
 ### delete-event
 ```
 $ strigo-cli delete-event <event_id>
 ```
+
+### enroll
+
+Enroll one or more students in an on-demand course
+
+```
+$ strigo-cli enroll --classid "xxxxxxxxx" \
+  --email "john.doe@example.com" \
+  --email "jane.doe@example.com" \
+  -f student_list.txt
+```
+
+| option        | short | description                                                                      |
+|---------------|-------|----------------------------------------------------------------------------------|
+| --classid     | -c    | On-Demand Class ID                                                               |
+| --email       | -e    | Email address of student. Can be used multiple times.                            |
+| --studentfile | -f    | Path to file containing a list of student email addresses. One address per line. |
 
 ### list-events
 ```
