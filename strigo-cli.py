@@ -169,18 +169,57 @@ def enroll(args, auth_header):
 
         print("%s: %s" % (response['data']['email'], response['data']['status']))
 
+def unenroll(args, auth_header):
+    api_endpoint = API_BASE_URL + 'ondemand' + '/' + args.classid + '/' +'enrollments' + '/' + args.enrollmentid
+
+    r = requests.delete(api_endpoint, headers=auth_header)
+    check_request_error(r)
+    response = r.json()
+
+    print(response['result'])
+
+def modify_enrollment(args, auth_header):
+    api_endpoint = API_BASE_URL + 'ondemand' + '/' + args.classid + '/' + 'enrollments' + '/' + args.enrollmentid
+
+    enrollment_config = {
+        "status": args.status
+    }
+
+    print(api_endpoint)
+    r = requests.patch(api_endpoint, headers=auth_header)
+    check_request_error(r)
+    response = r.json()
+
+    print(response['status'])
+
+def list_enrollments(args, auth_header):
+    api_endpoint = API_BASE_URL + 'ondemand' + '/' + args.classid + '/' + 'enrollments'
+
+    r = requests.get(api_endpoint, headers=auth_header)
+    check_request_error(r)
+
+    enrollment_list = r.json()['data']
+
+    for enrollment in enrollment_list:
+        
+        print("%s: %s: %s" % (enrollment['email'], enrollment['id'], enrollment['status']))
+
 def list_classes(args, auth_header):
     api_endpoint = API_BASE_URL + 'classes'
     r = requests.get(api_endpoint, headers=auth_header)
     check_request_error(r)
     class_list = r.json()['data']
 
-    print('')
-    print('{:<40s}{:<0s}'.format("Class Name", "Class ID"))
-    print('-' * 60)
+    if args.ids:
+        for classroom in class_list:
+            print(classroom['id'])
+    else:
+        print('')
+        print('{:<40s}{:<0s}'.format("Class Name", "Class ID"))
+        print('-' * 60)
 
-    for classroom in class_list:
-        print('{:<40s}{:<4s}'.format(classroom['name'], classroom['id']))
+        for classroom in class_list:
+            print('{:<40s}{:<4s}'.format(classroom['name'], classroom['id']))
 
 def get_class(args, auth_header):
     api_endpoint = API_BASE_URL + 'classes' + '/' + args.class_id
@@ -191,16 +230,23 @@ def get_class(args, auth_header):
 
     classroom = r.json()['data']
 
-    print("Name:      %s" % classroom['name'])
-    print("ID:        %s" % classroom['id'])
-    print("Owner:     %s" % classroom['owner']['email'])
-    print("Lab Instance:")
-    
-    for resource in classroom['resources']:
-        print("    Name: %s" % resource['name'])
-        print("    Type: %s" % resource['instance_type'])
-        print("    AMI: %s" % resource['image_id'])
-        print("    User: %s" % resource['image_user'])
+    if args.amis:
+        ami_list = []
+        for resource in classroom['resources']:
+            ami_list.append(resource['image_id'])
+
+        print("%s: %s" % (classroom['name'], ami_list))
+    else:
+        print("Name:      %s" % classroom['name'])
+        print("ID:        %s" % classroom['id'])
+        print("Owner:     %s" % classroom['owner']['email'])
+        print("Lab Instance:")
+        
+        for resource in classroom['resources']:
+            print("    Name: %s" % resource['name'])
+            print("    Type: %s" % resource['instance_type'])
+            print("    AMI: %s" % resource['image_id'])
+            print("    User: %s" % resource['image_user'])
 
 def check_request_error(response):
     if response.json()['result'] == 'failure':
@@ -251,12 +297,29 @@ def main():
     parser_enroll.add_argument('-f', '--studentfile', help="file containing student emails (one per line)")
     parser_enroll.set_defaults(func=enroll)
 
+    parser_unenroll = subparsers.add_parser('unenroll')
+    parser_unenroll.add_argument('-c', '--classid', required=True, help="ID of class to use")
+    parser_unenroll.add_argument('-e', '--enrollmentid', required=True, help="Enrollment ID")
+    parser_unenroll.set_defaults(func=unenroll)
+
+    parser_modify_enrollment = subparsers.add_parser('modify-enrollment')
+    parser_modify_enrollment.add_argument('-c', '--classid', required=True, help="ID of class to use")
+    parser_modify_enrollment.add_argument('-e', '--enrollmentid', required=True, help="Enrollment ID")
+    parser_modify_enrollment.add_argument('-s', '--status', required=True, help="Status (expired, paused, stopped, inactive)")
+    parser_modify_enrollment.set_defaults(func=modify_enrollment)
+
+    parser_list_enrollments = subparsers.add_parser('list-enrollments')
+    parser_list_enrollments.add_argument('-c', '--classid', required=True, help="ID of class to use")
+    parser_list_enrollments.set_defaults(func=list_enrollments)
+
     parser_list_classes = subparsers.add_parser('list-classes')
     parser_list_classes.set_defaults(func=list_classes)
+    parser_list_classes.add_argument('--ids', action="store_true", help="list class ids only")
 
     parser_get_class = subparsers.add_parser('get-class')
     parser_get_class.add_argument('class_id', help="class ID")
     parser_get_class.set_defaults(func=get_class)
+    parser_get_class.add_argument('--amis', action="store_true", help="list amis only")
 
     args = parser.parse_args()
     args.func(args, auth_header)
